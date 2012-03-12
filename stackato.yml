@@ -10,7 +10,7 @@ framework:
 #    ubuntu:
 #      - python-setuptools
 
-ignores: [ node_modules ]
+ignores: [ 'node_modules' ]
 
 hooks:
   post-staging:
