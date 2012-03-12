@@ -31,10 +31,23 @@ Current Languages
   * Python
   * Ruby (beta)
 
+
+Stackato
+--------
+
+To deploy to Stackato:
+
+    stackato push -n
+
+Stackato will download, configure and install the dependencies
+for you, **so the following instructions should only be heeded
+for local development**.
+
+
 Getting the Code
 ----------------
 
-    git clone git://github.com/replit/repl.it.git
+    git@github.com:Cloud-Apps/repl.it.git
     cd repl.it
     git submodule update --init --recursive
 
