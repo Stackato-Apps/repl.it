@@ -1,0 +1,27 @@
+name: repl-it
+
+mem: 512M
+
+framework:
+  type: node
+
+#requirements:
+#  staging:
+#    ubuntu:
+#      - python-setuptools
+
+ignores: [ node_modules ]
+
+hooks:
+  post-staging:
+    - npm install coffee-script
+    - cd $HOME; git submodule update --init --recursive
+
+  pre-running:
+    - sudo npm install -g coffee-script
+    - sudo apt-get -y update
+    - sudo apt-get -y install python-setuptools
+    - sudo easy_install pygments
+
+processes:
+  web: node $HOME/server.js $VCAP_APP_PORT 
