@@ -1,13 +1,3 @@
 *.pyc
 langs/*/*.html
-.DS_STORE
-analytics.js
-base.js
-browser-check.js
-build/
-dom.js
-languages.js
-pager.js
-repl.js
-session.js
-router.js
+node_modules

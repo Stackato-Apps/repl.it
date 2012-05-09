@@ -9,17 +9,15 @@ requirements:
   running:
     ubuntu:
       - python-setuptools
+      - python-pygments
 
-ignores: [ 'node_modules' ]
+ignores: [ 'node_modules', 'jsrepl' ]
 
 hooks:
   post-staging:
     - npm install coffee-script
     - cd $HOME; git submodule update --init --recursive
 
-  pre-running:
-    - sudo npm install -g coffee-script
-    - sudo easy_install pygments
 
 processes:
   web: node $HOME/server.js $VCAP_APP_PORT 
