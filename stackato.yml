@@ -11,6 +11,7 @@ hooks:
   post-staging:
     - npm install coffee-script
     - cd $HOME; git submodule update --init --recursive
+  pre-running:
     - sudo apt-get update
     - sudo apt-get install python-pygments
 
