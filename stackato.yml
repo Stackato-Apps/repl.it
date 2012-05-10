@@ -5,11 +5,6 @@ mem: 512M
 framework:
   type: node
 
-requirements:
-  running:
-    ubuntu:
-      - python-pygments
-
 ignores: [ 'node_modules', 'jsrepl' ]
 
 hooks:
