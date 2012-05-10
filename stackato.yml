@@ -8,7 +8,6 @@ framework:
 requirements:
   running:
     ubuntu:
-      - python-setuptools
       - python-pygments
 
 ignores: [ 'node_modules', 'jsrepl' ]
@@ -17,6 +16,7 @@ hooks:
   post-staging:
     - npm install coffee-script
     - cd $HOME; git submodule update --init --recursive
+    - sudo apt-get install python-pygments
 
 
 processes:
