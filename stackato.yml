@@ -9,6 +9,6 @@ requirements:
 hooks:
   post-staging:
     - npm install coffee-script
-    - cd $HOME; git submodule update --init --recursive
+    - git submodule update --init --recursive
 processes:
   web: node $HOME/server.js $VCAP_APP_PORT 
