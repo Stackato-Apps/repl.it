@@ -7,11 +7,11 @@ framework:
 
 ignores: [ 'node_modules', 'jsrepl' ]
 
+requirements:
+  pip:
+    - Pygments
 hooks:
   post-staging:
     - npm install coffee-script
-  pre-running:
-    - sudo apt-get update
-    - sudo apt-get install python-pygments
 processes:
   web: node $HOME/server.js $VCAP_APP_PORT 
