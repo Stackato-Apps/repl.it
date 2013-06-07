@@ -201,8 +201,8 @@ html, body {
   height: 100%;
 }
 
-.ace_gutter {
-  max-width: 2.25em !important;
+.ace_gutter-layer {
+  min-width: 40px!important;
 }
 
 /* Resizers */
@@ -451,36 +451,6 @@ html, body {
   z-index: 9999;
 }
 
-#social {
-  height: 24px;
-  width: 50%;
-  float: left;
-  padding-top: 6px;
-  text-align: center;
-}
-
-#social-buttons-container {
-  height: 20px;
-  line-height: 20px;
-  width: 60%;
-  margin: auto;
-}
-
-.social_button {
-  display: inline-block !important;
-  float: left !important;
-}
-
-/* Make the FB comment box appear above the footer. */
-.social_button span.fb_edge_comment_widget {
-  top: -139px !important;
-}
-
-/* Hide the twitter share in case loading it fails. */
-.twitter-share-button {
-  display: none;
-}
-
 #links {
   height: 30px;
   line-height: 30px;
@@ -620,14 +590,18 @@ html, body {
   margin-right: 8%;
 }
 
-.language-group li {
+
+.language-group li a {
+  display: list-item;
+  text-decoration: none;
+  color: inherit;
   padding-left: 16px;
   cursor: pointer;
   border: 1px transparent solid;
   border-radius: 20px;
 }
 
-.language-group li:hover {
+.language-group li a:hover {
   color: #111;
   text-shadow: 0 2px 0px rgba(240, 240, 240, 0.5);
   background: #ddd;
@@ -818,7 +792,7 @@ code .il { color: #40a070 } /* Literal.Number.Integer.Long */
   padding-top: 30px;
 }
 
-#help-header {
+.help-header {
   text-align: center;
   text-shadow: 0px 1px 0px rgba(200, 200, 200, 0.75);
   font-size: 120%;
@@ -877,9 +851,8 @@ code .il { color: #40a070 } /* Literal.Number.Integer.Long */
   text-align: justify;
 }
 
-#content-about p:first-child {
+#content-about {
   padding-top: 40px;
-  margin-top: 0;
 }
 
 #content-about img {
@@ -1045,39 +1018,49 @@ code .il { color: #40a070 } /* Literal.Number.Integer.Long */
   font-size: 75%;
 }
 
-#buttons div:hover .tooltip{
-  display:block;
-}
 .tooltip {
-  font-weight: normal;
-  display: none;
   position: absolute;
-  top: 23px;
-  left:-15px;
-  text-align: center;
-  margin-left: -104px;
-  padding: 6px;
-  margin: 1em 0 3em;
-  color: white;
-  line-height: 1.3em;
-  background-color: #444;
-  border-radius: 3px;
-  -moz-border-radius: 3px;
-  -webkit-border-radius: 3px;
-  z-index:1000;
-}
-.tooltip:after {
-  content: "";
+  z-index: 1020;
   display: block;
-  position: absolute;
-  top: -10px;
-  margin-left: -10px;
-  left: 50%;
-  width: 0;
-  border-width: 0 10px 10px;
-  border-style: solid;
-  border-color: #444 transparent;
+  padding: 5px;
+  font-size: 13px;
+  opacity: 0;
+  filter: alpha(opacity=0);
+  visibility: visible;
 }
-#button-help .tooltip, #button-save .tooltip{
-  left: 0;
+
+.tooltip.in {
+  opacity: 0.8;
+  filter: alpha(opacity=80);
+}
+
+.tooltip.bottom {
+  margin-top: 0;
+}
+
+.tooltip.bottom .tooltip-arrow {
+  top: 0;
+  left: 50%;
+  margin-left: -5px;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid #000000;
+  border-left: 5px solid transparent;
+}
+
+.tooltip-inner {
+  max-width: 200px;
+  padding: 3px 8px;
+  color: #ffffff;
+  text-align: center;
+  text-decoration: none;
+  background-color: #000000;
+  -webkit-border-radius: 4px;
+     -moz-border-radius: 4px;
+          border-radius: 4px;
+}
+
+.tooltip-arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
 }

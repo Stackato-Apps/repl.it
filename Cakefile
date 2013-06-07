@@ -4,9 +4,10 @@ fs = require 'fs'
 coffee = require 'coffee-script'
 
 INCLUDES = ['images', 'lib']
-LIBRARIES = ['lib/jqconsole-2.6.min.js']
-APP_FILES = ['base.coffee', 'browser-check.coffee', 'hash.coffee', 'dom.coffee',
-             'repl.coffee', 'pager.coffee', 'session.coffee',
+LIBRARIES = ['lib/jqconsole-2.7.4.min.js', 'lib/bootstrap-tooltip.js', 'lib/page.js']
+CSS = ['style.css', 'mobile.css', 'print.css', 'ansi.css']
+APP_FILES = ['base.coffee', 'browser-check.coffee', 'dom.coffee',
+             'repl.coffee', 'pager.coffee', 'router.coffee', 'session.coffee',
              'languages.coffee', 'analytics.coffee']
 JS_MINIFIER = "uglifyjs -nc --unsafe "
 CSS_MINIFIER = "java -jar ./jsrepl/tools/yuicompressor-2.4.6/build/yuicompressor-2.4.6.jar "
@@ -102,14 +103,16 @@ task 'bake', 'Build a final folder ready for deployment', ->
     html = html.replace /<!--BAKED\b([^]*?)\bUNBAKED-->[^]*?<!--\/UNBAKED-->/g, '$1'
     html = html.replace /{{CACHE_BUSTER}}/g, Date.now()
     fs.writeFileSync 'build/index.html', html
+    fs.writeFileSync 'build/google06a583d0d6c0899b.html', fs.readFileSync 'google06a583d0d6c0899b.html', 'utf8'
     gzip()
 
   minifyCSS = ->
     console.log 'Minifying CSS.'
     fs.mkdirSync 'build/css', 0o755
-    exec "#{CSS_MINIFIER} -o build/css/style.css css/style.css", ->
-      exec "#{CSS_MINIFIER} -o build/css/mobile.css css/mobile.css", ->
-        exec "#{CSS_MINIFIER} -o build/css/reset.css css/reset.css", updateHTML
+    minify = (i) ->
+      return updateHTML() if not CSS[i]?
+      exec "#{CSS_MINIFIER} -o build/css/#{CSS[i]} css/#{CSS[i]}", -> minify i + 1
+    minify 0
 
   buildCore = ->
     console.log 'Baking core JS.'
@@ -143,3 +146,64 @@ task 'bake', 'Build a final folder ready for deployment', ->
                 file = "langs/#{lang}/#{examples_file}"
                 pygmentizeExample lang, file
           exec 'cp -r langs/* build/langs', buildCore
+
+task 'langs-html', ->
+  {Languages} = require './languages.coffee'
+  language_group = (data) ->
+    {category, languages} = data
+    """
+
+    <div class="language-group">
+      <h3 class="language-group-header">#{category}</h3>
+      <ul>
+        #{(language_entry(language) for language in languages).join('')}
+      </ul>
+    </div>
+
+    """
+
+  language_entry = (data) ->
+    {name, shortcut, system_name, tagline} = data
+    shortcut_index = name.indexOf(shortcut)
+    """
+
+    <li>
+      <a href="/languages/#{system_name}"><b>#{name[0...shortcut_index]}<em>#{shortcut}</em>#{name[shortcut_index + 1...]}:</b>&nbsp;
+        #{tagline}</a>
+    </li>
+    
+    """
+
+  render = ->
+    html = []
+    categories_order = [
+      'Classic'
+      'Practical'
+      'Esoteric'
+      'Web'
+    ]
+    template_data =
+      Classic:
+        category: 'Classic'
+        languages: ['QBasic', 'Forth']
+      Practical:
+        category: 'Practical'
+        languages: ['Ruby', 'Python', 'Lua', 'Scheme']
+      Esoteric:
+        category: 'Esoteric'
+        languages: ['Emoticon', 'Brainfuck', 'LOLCODE', 'Unlambda', 'Bloop']
+      Web:
+        category: 'Web'
+        languages: ['JavaScript', 'Traceur', 'Move', 'Kaffeine', 'CoffeeScript', 'Roy']
+
+    for _, category of template_data
+      for lang_name, index in category.languages
+        lang = Languages[lang_name.toLowerCase()]
+        lang.system_name = lang_name
+        category.languages[index] = lang
+    for category in categories_order
+      html.push language_group template_data[category]
+
+    return html.join ''
+
+  console.log render()

@@ -7,97 +7,43 @@ ANIMATION_DURATION = 300
 KEY_ESCAPE = 27
 FIRST_LOAD = true
 
-LANG_TEMPLATE =
-  language_group: (data) ->
-    {category, languages} = data
-    """
-    <div class="language-group">
-      <div class="language-group-header">#{category}</div>
-        <ul>
-          #{(@language_entry(language) for language in languages).join('')}
-        </ul>
-      </div>
-    </div>
-  """
-
-  language_entry: (data) ->
-    {name, shortcut, system_name, tagline} = data
-    shortcut_index = name.indexOf(shortcut)
-    """
-      <li data-lang="#{system_name}">
-        <b>#{name[0...shortcut_index]}<em>#{shortcut}</em>#{name[shortcut_index + 1...]}:</b>&nbsp;
-          #{tagline}
-      </li>
-    """
-
-  render: ->
-    html = []
-    categories_order = [
-      'Classic'
-      'Practical'
-      'Esoteric'
-      'Web'
-    ]
-    template_data =
-      Classic:
-        category: 'Classic'
-        languages: ['QBasic', 'Forth']
-      Practical:
-        category: 'Practical'
-        languages: ['Ruby', 'Python', 'Lua', 'Scheme']
-      Esoteric:
-        category: 'Esoteric'
-        languages: ['Emoticon', 'Brainfuck', 'LOLCODE', 'Unlambda', 'Bloop']
-      Web:
-        category: 'Web'
-        languages: ['JavaScript', 'Traceur', 'Move', 'Kaffeine', 'CoffeeScript', 'Roy']
-
-    for _, category of template_data
-      for lang_name, index in category.languages
-        lang = REPLIT.Languages[lang_name]
-        lang.system_name = lang_name
-        category.languages[index] = lang
-    for category in categories_order
-      html.push @language_group template_data[category]
-
-    return html.join ''
-
 PAGES =
   workspace:
     id: 'content-workspace'
-    title: '$'
     min_width: 500
     width: 1000
     max_width: 3000
+    path: '/'
   languages:
     id: 'content-languages'
-    title: 'Select a Language'
     min_width: 1080
     width: 1080
     max_width: 1400
+    path: '/languages'
   examples:
     id: 'content-examples'
-    title: '$ Examples'
     min_width: 1000
     width: 1000
     max_width: 1400
+    path: '/examples'
   help:
     id: 'content-help'
-    title: 'Help'
     min_width: 1000
     width: 1000
     max_width: 1400
+    path: '/help'
   about:
     id: 'content-about'
-    title: 'About Us'
     min_width: 600
     max_width: 600
     width: 600
+    path: '/about'
   DEFAULT: 'workspace'
 
 ALLOWED_IN_MODAL = ['help', 'about', 'languages']
 
 $.extend REPLIT,
+  PAGES: PAGES
   modal: false
   Modal: (@modal)->
   LoadExamples: (file, container, callback) ->
@@ -129,28 +75,31 @@ $.extend REPLIT,
 
   # Open a page by its name.
   OpenPage: (page_name, callback=$.noop) ->
-    if @changing_page or (@modal and page_name not in ALLOWED_IN_MODAL) then return
-    @changing_page = true
+    return if @modal and page_name not in ALLOWED_IN_MODAL
     page = PAGES[page_name]
     current_page = @page_stack[@page_stack.length - 1]
-
     # If the page actually exists and it's not the current one.
     if not page or current_page is page_name
       @changing_page = false
+    else if @changing_page
+      # Interrupt current page switching animation.
+      $('.page').stop true, true
+      @$container.stop true, true
+      @changing_page = false
+      # Retry openning the page.
+      @OpenPage page_name
     else
+      @changing_page = true
       # Calculate and set title.
       lang_name = if @current_lang_name
-        @Languages[@current_lang_name].name
+        @Languages[@current_lang_name.toLowerCase()].name
       else
         ''
-      $title = $ '#title'
-      new_title = page.title.replace /\$/g, lang_name
-      if current_page
-        $title.fadeOut ANIMATION_DURATION, ->
-          $title.text new_title
-          $title.fadeIn ANIMATION_DURATION
+      if page_name != 'workspace'
+        new_title = page.$elem.find('.content-title').hide().text()
+        REPLIT.changeTitle new_title
       else
-        $title.text new_title
+        REPLIT.changeTitle REPLIT.current_lang_name
 
       # Update widths to those of the new page.
       # We can't take into account mobile sizes, so just assign the whole screen
@@ -174,8 +123,6 @@ $.extend REPLIT,
         @page_stack.splice index, 1
       # Put the page on top of the stack.
       @page_stack.push page_name
-      hash_name = if page_name is PAGES.DEFAULT then '' else page_name
-      REPLIT.setHash 1, hash_name
 
       # Calculate container width.
       outerWidth = page.width
@@ -210,18 +157,19 @@ $.extend REPLIT,
   # Back to the original environment width.
   CloseLastPage: ->
     if @changing_page then return
-    if @page_stack.length <= 1 then return
-    closed_page = @page_stack[@page_stack.length - 1]
-    @OpenPage @page_stack[@page_stack.length - 2], =>
+    if @page_stack.length <= 1
+      Router.navigate '/'
+    else
+      closed_page = @page_stack[@page_stack.length - 1]
+      Router.navigate PAGES[@page_stack[@page_stack.length - 2]].path
       @page_stack.splice @page_stack.indexOf(closed_page), 1
 
 $ ->
   # Render language selector.
-  $('#content-languages').append LANG_TEMPLATE.render()
 
   # Load Examples
   REPLIT.$this.bind 'language_loading', (_, system_name) ->
-    examples = REPLIT.Languages[system_name].examples
+    examples = REPLIT.Languages[system_name.toLowerCase()].examples
     if not REPLIT.ISMOBILE
       REPLIT.LoadExamples examples.editor, 'editor', (example) ->
         REPLIT.editor.getSession().doc.setValue example
@@ -231,19 +179,6 @@ $ ->
       REPLIT.jqconsole.SetPromptText example
       REPLIT.OpenPage 'workspace', ->
         REPLIT.jqconsole.Focus()
-
-  # React to hash changes.
-  REPLIT.$this.bind 'hashchange:1', (_, new_page) ->
-    if not new_page then new_page = PAGES.DEFAULT
-    if new_page of PAGES
-      current_page = @page_stack[@page_stack.length - 1]
-      if new_page isnt current_page
-        if REPLIT.changing_page
-          # Interrupt current page switching animation.
-          $('.page').stop true, true
-          @$container.stop true, true
-          REPLIT.changing_page = false
-        REPLIT.OpenPage new_page
 
   # Since we will be doing lots of animation and syncing, we better cache the
   # jQuery elements.
@@ -256,40 +191,6 @@ $ ->
   # Assign events.
   $body = $ 'body'
   $body.delegate '.page-close', 'click', -> REPLIT.CloseLastPage()
-  $body.delegate '.language-group li', 'click', ->
-    REPLIT.current_lang_name = $(@).data 'lang'
-    REPLIT.OpenPage 'workspace', =>
-      REPLIT.LoadLanguage REPLIT.current_lang_name
-
-  # Bind page buttons.
-  bindPageButtons = ->
-    $('#button-examples').click ->
-      # TODO(max99x): Expose state properly from jqconsole.
-      if REPLIT.current_lang? and REPLIT.jqconsole.state is 2  # STATE_PROMPT
-        $('#examples-editor').toggle REPLIT.split_ratio != REPLIT.EDITOR_HIDDEN
-        $('#examples-console').toggle REPLIT.split_ratio != REPLIT.CONSOLE_HIDDEN
-        REPLIT.OpenPage 'examples'
-      return false
-    $('#button-languages').click ->
-      REPLIT.OpenPage 'languages'
-      return false
-    $('#logo').click ->
-      REPLIT.OpenPage 'languages'
-      return false
-    $('#link-about').click ->
-      REPLIT.OpenPage 'about'
-      return false
-    $('#button-help').click ->
-      REPLIT.OpenPage 'help'
-      return false
-  unbindPageButtons = ->
-    buttons = $('#button-examples, #button-languages, #link-about, #button-help')
-    buttons.unbind 'click'
-  bindPageButtons()
-
-  # Disable buttons while a language is being loaded.
-  REPLIT.$this.bind 'language_loading', unbindPageButtons
-  REPLIT.$this.bind 'language_loaded', bindPageButtons
 
   # Bind page closing to Escape.
   $(window).keydown (e) ->
@@ -300,7 +201,7 @@ $ ->
   $('#content-languages').keypress (e) ->
     if e.shiftKey or e.ctrlKey or e.metaKey then return
     letter = String.fromCharCode(e.which).toLowerCase()
-    $('#content-languages li').each ->
+    $('#content-languages li a').each ->
       if $('em', $ @).text().toLowerCase() == letter
-        $(@).click()
+        @click()
         return false

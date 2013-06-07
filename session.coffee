@@ -2,7 +2,6 @@
 # Encapsulates for all session/state loading saving logic.
 # TODO(amasad): Graceful localStorage degradation to cookies.
 $ = jQuery
-PUSHSTATE_SUPPORTED = 'pushState' of history
 WAIT_BETWEEN_SAVES = 2000
 SHARE_TEMPLATE =
   twitter: ->
@@ -34,58 +33,46 @@ SHARE_TEMPLATE =
 $.extend REPLIT,
   session:
     eval_history: []
-  pushState: (text) ->
-    if PUSHSTATE_SUPPORTED
-      # We only want to clear state #0 (Session path), restore the page hash
-      # after clearing the session path.
-      {hash} = window.location
-      window.history.pushState null, null, "/#{text}"
-      window.location.hash = hash
-    else
-      REPLIT.setHash 0, text
-
 # Resets application to its initial state (handler for language_loaded event).
 reset_state = (e, lang_name) ->
   localStorage.setItem 'lang_name', lang_name
   $('#replay-button').hide()
   @session = {}
   @session.eval_history = []
-  REPLIT.pushState ''
+  Router.change_base '/'
 
 $ ->
   # If there exists a REPLIT_DATA variable, then we are in a saved session.
   if REPLIT_DATA?
     # Load the language specified by the incoming session data.
     REPLIT.current_lang_name = REPLIT_DATA.language
-    REPLIT.OpenPage 'workspace', ->
-      REPLIT.LoadLanguage REPLIT_DATA.language, ->
-        # Set the editor text.
-        REPLIT.editor.getSession().setValue REPLIT_DATA.editor_text if not REPLIT.ISMOBILE
-        # Get the session data.
-        REPLIT.session.id = REPLIT_DATA.session_id
-        REPLIT.session.rid = REPLIT_DATA.revision_id
-        REPLIT.session.saved_eval_history = REPLIT_DATA.eval_history
-        # Show the replay button.
-        $('#replay-button').show()
-        # Delete the incoming session data from the server since we have
-        # extracted everything we neeed.
-        delete window['REPLIT_DATA']
-        # On each language load after this one reset the state.
-        REPLIT.$this.bind 'language_loaded', reset_state
-  else
+    REPLIT.LoadLanguage REPLIT_DATA.language, ->
+      # Set the editor text.
+      REPLIT.editor.getSession().setValue REPLIT_DATA.editor_text if not REPLIT.ISMOBILE
+      # Get the session data.
+      REPLIT.session.id = REPLIT_DATA.session_id
+      REPLIT.session.rid = REPLIT_DATA.revision_id
+      REPLIT.session.saved_eval_history = REPLIT_DATA.eval_history
+      # Show the replay button.
+      $('#replay-button').show()
+      # Delete the incoming session data from the server since we have
+      # extracted everything we neeed.
+      delete window['REPLIT_DATA']
+      # On each language load after this one reset the state.
+      REPLIT.$this.bind 'language_loaded', reset_state
+  else if not REPLIT.url_language
     # We are not in a saved session.
     # Safely bind the reset state function.
     REPLIT.$this.bind 'language_loaded', reset_state
     lang_name = localStorage.getItem('lang_name')
     if lang_name?
       REPLIT.loading_saved_lang = true
+      REPLIT.current_lang_name = lang_name
 
       # We have a saved local settings for language to load. Delay this until
       # the Analytics modules has set its hook so it can catch language loading.
       $ ->
-        REPLIT.current_lang_name = lang_name
-        REPLIT.OpenPage 'workspace', ->
-          REPLIT.LoadLanguage lang_name
+        REPLIT.LoadLanguage lang_name
     else
       # This is the first visit; show language overlay.
       $('#languages-back').bind 'click.language_modal', (e) ->
@@ -96,8 +83,7 @@ $ ->
 
       REPLIT.$this.bind 'language_loaded.language_modal', (e) ->
         $('#languages-back').unbind 'click.language_modal'
-
-      REPLIT.OpenPage 'languages'
+      Router.navigate '/languages'
       REPLIT.Modal true
 
   # Click handler for the replay button.
@@ -167,9 +153,9 @@ $ ->
       $savebox = $('#save-box')
       # Update URL.
       if revision_id > 0
-        REPLIT.pushState session_id + '/' + revision_id
+        Router.change_base "/#{session_id}/#{revision_id}"
       else
-        REPLIT.pushState session_id
+        Router.change_base "/#{session_id}"
       # Update IDs.
       REPLIT.session.id = session_id
       REPLIT.session.rid = revision_id

@@ -12,10 +12,12 @@ $.extend REPLIT,
       error: $.proxy @ErrorCallback, @
       progress: $.proxy @OnProgress, @
       timeout:
-        time: 15000,
+        time: 12000,
         callback: =>
-          a = confirm 'The program is taking too long to finish. Do you want to stop it?'
-          @LoadLanguage @current_lang.system_name if a
+          if a = confirm 'The program is taking too long to finish. Do you want to stop it?'
+            code = @editor.getSession().getValue()
+            @LoadLanguage @current_lang.system_name , =>
+              @editor.getSession().setValue code
           return a
     }
 
@@ -35,6 +37,17 @@ $.extend REPLIT,
           @jqconsole.AbortPrompt()
           @Evaluate REPLIT.editor.getSession().getValue()
 
+      @editor.commands.addCommand
+        name: 'run'
+        bindKey:
+          win: 'Ctrl-Return'
+          mac: 'Command-Return'
+          sebder: 'editor'
+        exec: => 
+          @$run.click()
+          # Allow async eval to happen then reclaim focus to editor.
+          setTimeout (=> @editor.focus()), 0
+
     @current_lang = null
     @current_lang_name = null
     @inited = true
@@ -52,12 +65,13 @@ $.extend REPLIT,
       UndoManager = require("ace/undomanager").UndoManager
       session = new EditSession ''
       session.setUndoManager new UndoManager
-      ace_mode = @Languages[lang_name].ace_mode
+      ace_mode = @Languages[lang_name.toLowerCase()].ace_mode
       if ace_mode?
         # jQuery deferred object for getting ace mode.
         ace_mode_ajax = $.getScript ace_mode.script, =>
           mode = require(ace_mode.module).Mode
           session.setMode new mode
+          session.setUseWrapMode true
           @editor.setSession session
       else
         # No ace mode found create a resolved deferred.
@@ -95,7 +109,7 @@ $.extend REPLIT,
       $.when(ace_mode_ajax).then =>
         @StartPrompt()
         @$this.trigger 'language_loaded', [lang_name]
-        @jqconsole.Write @Languages[lang_name].header + '\n'
+        @jqconsole.Write @Languages[lang_name.toLowerCase()].header + '\n'
         callback()
 
   # Receives the result of a command evaluation.

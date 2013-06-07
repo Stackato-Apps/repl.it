@@ -1,8 +1,10 @@
 # Core module.
 # Defines the supported languages.
+if not @REPLIT?
+  @REPLIT = exports
 
 @REPLIT.Languages =
-  QBasic:
+  qbasic:
     name: 'QBasic'
     tagline: 'Structured programming for beginners.'
     shortcut: 'Q'
@@ -15,7 +17,7 @@
       QBasic (qb.js)
       Copyright (c) 2010 Steve Hanov
     '''
-  Forth:
+  forth:
     name: 'Forth'
     tagline: 'An interactive stack-oriented language.'
     shortcut: 'h'
@@ -29,7 +31,7 @@
       http://www.forthfreak.net/jsforth.html
       This program is published under the GPL.
     '''
-  LOLCODE:
+  lolcode:
     name: 'LOLCODE'
     tagline: 'The basic language of lolcats.'
     shortcut: 'O'
@@ -42,7 +44,7 @@
       LOLCODE v1.2 (lol-coffee)
       Copyright (c) 2011 Max Shawabkeh
     '''
-  Brainfuck:
+  brainfuck:
     name: 'Brainfuck'
     tagline: 'A pure Turing machine controller.'
     shortcut: 'f'
@@ -55,7 +57,7 @@
       Brainfuck, bfjs
       Copyright (c) 2011 Amjad Masad
     '''
-  Emoticon:
+  emoticon:
     name: 'Emoticon'
     tagline: 'Programming with an extra dose of smile.'
     shortcut: 'E'
@@ -68,7 +70,7 @@
       Emoticon v1.5 (emoticoffee)
       Copyright (c) 2011 Amjad Masad
     '''
-  Bloop:
+  bloop:
     name: 'Bloop'
     tagline: 'Nothing but bounded loops.'
     shortcut: 'B'
@@ -82,7 +84,7 @@
       Copyright (c) 2005 Tim Cameron Ryan
       Based on Perl code by John Cowan, 1994
     '''
-  Unlambda:
+  unlambda:
     name: 'Unlambda'
     tagline: 'Functional purity given form.'
     shortcut: 'U'
@@ -95,7 +97,7 @@
       Unlambda v2.0 (unlambda-coffee)
       Copyright (c) 2011 Max Shawabkeh
     '''
-  JavaScript:
+  javascript:
     name: 'JavaScript'
     tagline: 'The de facto language of the Web.'
     shortcut: 'J'
@@ -109,26 +111,30 @@
       module: 'ace/mode/javascript'
     header: """
       Native #{
-        if $.browser.webkit
-          if navigator.userAgent.match /Android/ then 'Android'
-          else if navigator.userAgent.match /Chrome/ then 'Chrome'
-          else 'WebKit'
-        else if $.browser.opera then 'Opera'
-        else if $.browser.msie then 'Internet Explorer'
-        else if $.browser.mozilla then 'Mozilla Firefox'
-        else 'Browser'
+        if $?
+          if $.browser.webkit
+            if navigator.userAgent.match /Android/ then 'Android'
+            else if navigator.userAgent.match /Chrome/ then 'Chrome'
+            else 'WebKit'
+          else if $.browser.opera then 'Opera'
+          else if $.browser.msie then 'Internet Explorer'
+          else if $.browser.mozilla then 'Mozilla Firefox'
+          else 'Browser'
+        else 'Unknown'
       } JavaScript.
-      Copyright (c) 2011 #{
+      Copyright (c) 2013 #{
         navigator?.vendor?.replace(/\.$/, '') or (
-          if $.browser.webkit then 'Apple Inc'
-          else if $.browser.opera then 'Opera Software ASA'
-          else if $.browser.msie then 'Microsoft'
-          else if $.browser.mozilla then 'Mozilla Foundation'
-          else 'Browser Vendor'
+          if $?
+            if $.browser.webkit then 'Apple Inc'
+            else if $.browser.opera then 'Opera Software ASA'
+            else if $.browser.msie then 'Microsoft'
+            else if $.browser.mozilla then 'Mozilla Foundation'
+            else 'Browser Vendor'
+          else ''
         )
       }
     """
-  Traceur:
+  traceur:
     name: 'Javascript.next'
     tagline: 'The JavaScript of tomorrow.'
     shortcut: 'n'
@@ -141,7 +147,7 @@
       Traceur Compiler v0.10
       Copyright (c) 2011 Google Inc.
     '''
-  CoffeeScript:
+  coffeescript:
     name: 'CoffeeScript'
     tagline: 'Unfancy JavaScript.'
     shortcut: 'C'
@@ -157,7 +163,7 @@
       CoffeeScript v1.3.1
       Copyright (c) 2011, Jeremy Ashkenas
     '''
-  Kaffeine:
+  kaffeine:
     name: 'Kaffeine'
     tagline: 'Extended JavaScript for pros.'
     shortcut: 'K'
@@ -172,7 +178,7 @@
       |_|\\_\\__,_|_| |_| \\___|_|_||_\\___|
       Version 0.0.4, Copyright (c) 2010 Jonah Fox
     '''
-  Move:
+  move:
     name: 'Move'
     tagline: 'The easy way to program the web.'
     shortcut: 'M'
@@ -185,7 +191,7 @@
       Move v0.4.3
       Copyright (c) 2011 Rasmus Andersson
     '''
-  Scheme:
+  scheme:
     name: 'Scheme'
     tagline: 'An elegant dynamic dialect of Lisp.'
     shortcut: 'S'
@@ -194,14 +200,14 @@
     examples:
       editor: '/langs/scheme/examples-editor.html'
       console: '/langs/scheme/examples-console.html'
-    ace_mode:
-      script: '/lib/ace/mode-scheme.js'
-      module: 'ace/mode/scheme'
+    # ace_mode:
+    #   script: '/lib/ace/mode-scheme.js'
+    #   module: 'ace/mode/scheme'
     header: '''
       BiwaScheme Interpreter version 0.5.7
       Copyright (C) 2007-2010 Yutaka HARA and the BiwaScheme team
     '''
-  Lua:
+  lua:
     name: 'Lua'
     tagline: 'A lightweight multi-paradigm scripting language.'
     shortcut: 'L'
@@ -217,7 +223,7 @@
       Lua 5.1  Copyright (C) 1994-2006 Lua.org, PUC-Rio
       [GCC 4.2.1 (LLVM, Emscripten 1.5)] on linux2
     '''
-  Python:
+  python:
     name: 'Python'
     tagline: 'A dynamic language emphasizing readability.'
     shortcut: 'P'
@@ -233,7 +239,7 @@
       Python 2.7.2 (default, Jul 20 2011, 02:32:18)
       [GCC 4.2.1 (LLVM, Emscripten 1.5, Empythoned)] on linux2
     '''
-  Ruby:
+  ruby:
     name: 'Ruby (beta)'
     tagline: 'A natural dynamic object-oriented language.'
     shortcut: 'R'
@@ -249,7 +255,7 @@
       Ruby 1.8.7 (2008-05-31 patchlevel 0) [x86-linux]
       [GCC 4.2.1 (LLVM, Emscripten 1.5, Emscripted-Ruby)]
     '''
-  Roy:
+  roy:
     name: 'Roy'
     tagline: 'Small functional language that compiles to JavaScript.'
     shortcut: 'y'

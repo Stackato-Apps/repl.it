@@ -12,7 +12,8 @@ ANIMATION_DURATION = 700
 MIN_PROGRESS_DURATION = 1
 MAX_PROGRESS_DURATION = 1500
 PROGRESS_ANIMATION_DURATION = 2000
-SOCIAL_BUTTONS_DELAY = 20000
+TITLE_ANIMATION_DURATION = 300
+DEFAULT_TITLE = 'Online Interpreter'
 $ = jQuery
 
 # jQuery plugin to disable text selection (x-browser).
@@ -319,22 +320,18 @@ $.extend REPLIT,
     # Call to Ace editor resize.
     @editor.resize() if not @ISMOBILE
 
-  InjectSocial: ->
-    $rootDOM = $('#social-buttons-container')
-
-    $.getScript 'http://connect.facebook.net/en_US/all.js#appId=111098168994577&amp;xfbml=1', ->
-      FB.init
-        appId: '111098168994577'
-        xfbxml: true
-        status: true
-        cookie: true
-
-      FB.XFBML.parse $rootDOM.get(0)
-
-    $.getScript 'http://platform.twitter.com/widgets.js', ->
-      $rootDOM.find('.twitter-share-button').show()
-
-    $.getScript 'https://apis.google.com/js/plusone.js'
+  changeTitle: (title) ->
+    $title = $ '#title'
+    curr_title = $title.text().trim()
+    return if not title or curr_title == title
+    document.title = "repl.it - #{title}"
+    if curr_title != '' and curr_title != DEFAULT_TITLE
+      $title.fadeOut TITLE_ANIMATION_DURATION, ->
+        $title.text title
+        $title.fadeIn TITLE_ANIMATION_DURATION
+    else
+      console.log title
+      $title.text title
 
 $ ->
   if REPLIT.ISIOS then $('html, body').css 'overflow', 'hidden'
@@ -344,10 +341,11 @@ $ ->
     REPLIT.last_progress_ratio = 0
 
     # Update footer links.
-    lang = REPLIT.Languages[system_name]
+    lang = REPLIT.Languages[system_name.toLowerCase()]
     $about = $ '#language-about-link'
     $engine = $ '#language-engine-link'
     $links = $ '#language-engine-link, #language-about-link'
+    REPLIT.changeTitle system_name
 
     $links.animate opacity: 0, 'fast', ->
       $about.text 'about ' + system_name.toLowerCase()
@@ -358,9 +356,11 @@ $ ->
 
       $links.animate opacity: 1, 'fast'
 
-  REPLIT.$this.bind 'language_loaded', ->
+  REPLIT.$this.bind 'language_loaded', (e, lang_name) ->
     REPLIT.OnProgress 100
     REPLIT.$progress.animate opacity: 0, 'fast'
+    REPLIT.changeTitle lang_name
+
   # When the device orientation change adapt the workspace to the new width.
   check_orientation = ->
     cb = ->
@@ -374,4 +374,6 @@ $ ->
   $(window).bind 'orientationchange', check_orientation
   if REPLIT.ISMOBILE then check_orientation()
   REPLIT.InitDOM()
-  $(window).bind 'load', -> setTimeout REPLIT.InjectSocial, SOCIAL_BUTTONS_DELAY
+  $('#buttons').tooltip
+    selector: '.button'
+    placement: 'bottom'

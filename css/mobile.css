@@ -187,37 +187,6 @@ html, body {
   z-index: 9999;
 }
 
-#social {
-  height: 24px;
-  width: 100%;
-  float: left;
-  padding-top: 6px;
-  text-align: center;
-  padding-left: 7%;
-}
-
-#social-buttons-container {
-  height: 20px;
-  line-height: 20px;
-  width: 100%;
-  margin: auto;
-}
-
-.social_button {
-  display: inline-block !important;
-  float: left !important;
-}
-
-/* Make the FB comment box appear above the footer. */
-.social_button span.fb_edge_comment_widget {
-  top: -139px !important;
-}
-
-/* Hide the twitter share in case loading it fails. */
-.twitter-share-button {
-  display: none;
-}
-
 #links {
   display:none;
 }
@@ -574,14 +543,17 @@ html, body {
   margin-right: 2%;
 }
 
-.language-group li {
+.language-group li a {
+  display: list-item;
+  text-decoration: none;
+  color: inherit;
   padding-left: 16px;
   cursor: pointer;
   border: 1px transparent solid;
   border-radius: 20px;
 }
 
-.language-group li:hover {
+.language-group li a:hover {
   color: #111;
   text-shadow: 0 2px 0px rgba(240, 240, 240, 0.5);
   background: #ddd;
@@ -760,7 +732,7 @@ code .il { color: #40a070 } /* Literal.Number.Integer.Long */
   padding-top: 30px;
 }
 
-#help-header {
+.help-header {
   text-align: center;
   text-shadow: 0px 1px 0px rgba(200, 200, 200, 0.75);
   font-size: 120%;
