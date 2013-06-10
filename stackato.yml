@@ -2,9 +2,6 @@ name: repl-it
 mem: 512M
 framework:
   type: node
-requirements:
-  pip:
-    - Pygments
 hooks:
   post-staging:
     - npm install coffee-script
