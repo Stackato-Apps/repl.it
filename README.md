@@ -47,9 +47,8 @@ for local development**.
 Getting the Code
 ----------------
 
-    git@github.com:Cloud-Apps/repl.it.git
+    git clone --recursive git@github.com:Cloud-Apps/repl.it.git
     cd repl.it
-    git submodule update --init --recursive
 
 Dependencies
 ------------
