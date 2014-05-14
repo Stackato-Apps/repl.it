@@ -5,6 +5,7 @@ framework:
 hooks:
   post-staging:
     - npm install coffee-script
+    - pypm install pygments
     - git submodule update --init --recursive
 processes:
   web: node $HOME/server.js $VCAP_APP_PORT 
