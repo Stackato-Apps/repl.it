@@ -1,3 +1,5 @@
 *.pyc
 langs/*/*.html
-node_modules
+.DS_STORE
+build/
+src/*.js

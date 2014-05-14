@@ -4,12 +4,12 @@ fs = require 'fs'
 coffee = require 'coffee-script'
 
 INCLUDES = ['images', 'lib']
-LIBRARIES = ['lib/jqconsole-2.7.4.min.js', 'lib/bootstrap-tooltip.js', 'lib/page.js']
+LIBRARIES = ['lib/jqconsole-2.10.0.min.js', 'lib/bootstrap-tooltip.js', 'lib/page.js']
 CSS = ['style.css', 'mobile.css', 'print.css', 'ansi.css']
-APP_FILES = ['base.coffee', 'browser-check.coffee', 'dom.coffee',
-             'repl.coffee', 'pager.coffee', 'router.coffee', 'session.coffee',
-             'languages.coffee', 'analytics.coffee']
-JS_MINIFIER = "uglifyjs -nc --unsafe "
+APP_FILES = ['src/base.coffee', 'src/browser-check.coffee', 'src/dom.coffee',
+             'src/repl.coffee', 'src/pager.coffee', 'src/router.coffee', 'src/session.coffee',
+             'src/languages.coffee', 'src/analytics.coffee']
+JS_MINIFIER = "uglifyjs "
 CSS_MINIFIER = "java -jar ./jsrepl/tools/yuicompressor-2.4.6/build/yuicompressor-2.4.6.jar "
 
 # Compiles a .coffee file to a .js one, synchronously.
@@ -40,24 +40,18 @@ pygmentizeExample = (language, filename) ->
       highlighted = (i.join '\n' + separator for i in highlighted)
       result = highlighted.join(separator + '\n') + separator
       fs.writeFileSync html_filename, result
-      
-  exec 'which python2', (err, py_path) ->
-    if err
-      PYTHON = 'python'
-    else
-      PYTHON = py_path
-    
-    for [example_name, example], index in examples
-      do (example_name, example, index) ->
-        example = example.replace /^\s+|\s+$/g, ''
-        child = exec "#{PYTHON} pyg.py #{language}", (error, result) ->
-          if error
-            console.log "Highlighting #{filename} failed:\n#{error.message}."
-          else
-            highlighted[index] = [example_name, result]
-            writeResult()
-        child.stdin.write example
-        child.stdin.end()
+
+  for [example_name, example], index in examples
+    do (example_name, example, index) ->
+      example = example.replace /^\s+|\s+$/g, ''
+      child = exec "python pyg.py #{language}", (error, result) ->
+        if error
+          console.log "Highlighting #{filename} failed:\n#{error.message}."
+        else
+          highlighted[index] = [example_name, result]
+          writeResult()
+      child.stdin.write example
+      child.stdin.end()
 
 watchFile = (filename, callback) ->
   callback filename
@@ -156,7 +150,7 @@ task 'langs-html', ->
     <div class="language-group">
       <h3 class="language-group-header">#{category}</h3>
       <ul>
-        #{(language_entry(language) for language in languages).join('')}
+      #{(language_entry(language) for language in languages).join('')}
       </ul>
     </div>
 
@@ -166,12 +160,10 @@ task 'langs-html', ->
     {name, shortcut, system_name, tagline} = data
     shortcut_index = name.indexOf(shortcut)
     """
-
-    <li>
-      <a href="/languages/#{system_name}"><b>#{name[0...shortcut_index]}<em>#{shortcut}</em>#{name[shortcut_index + 1...]}:</b>&nbsp;
-        #{tagline}</a>
-    </li>
-    
+        <li>
+          <a href="/languages/#{system_name}"><b>#{name[0...shortcut_index]}<em>#{shortcut}</em>#{name[shortcut_index + 1...]}:</b>&nbsp;
+            #{tagline}</a>
+        </li>
     """
 
   render = ->
@@ -185,7 +177,7 @@ task 'langs-html', ->
     template_data =
       Classic:
         category: 'Classic'
-        languages: ['QBasic', 'Forth']
+        languages: ['QBasic', 'Forth', 'APL']
       Practical:
         category: 'Practical'
         languages: ['Ruby', 'Python', 'Lua', 'Scheme']
