@@ -47,7 +47,7 @@ for local development**.
 Getting the Code
 ----------------
 
-    git clone --recursive git@github.com:Cloud-Apps/repl.it.git
+    git clone --recursive git@github.com:Stackato-Apps/repl.it.git
     cd repl.it
 
 Dependencies
