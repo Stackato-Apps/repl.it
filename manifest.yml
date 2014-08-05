@@ -1,0 +1,14 @@
+applications:
+- name: repl-it
+  framework:
+    name: node
+  mem: 512M
+  stackato:
+    hooks:
+      post-staging:
+      - npm install coffee-script
+      - pypm install pygments
+      - git submodule update --init --recursive
+    ignores: []
+    processes:
+      web: node $HOME/server.js $VCAP_APP_PORT
